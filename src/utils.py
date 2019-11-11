@@ -23,7 +23,7 @@ def get_num_workers():
 
 def is_debag():
     if 'BAGSDEBUG' in os.environ:
-        return bool(os.environ['BAGSDEBUG'])
+        return (os.environ['BAGSDEBUG'] == 'True')
     else:
         return False
 

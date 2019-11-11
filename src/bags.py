@@ -25,6 +25,12 @@ if __name__ == '__main__':
     parser_info.set_defaults(cmd_path='/subcmd_info.py', preproc=PreprocCmdInfo)
     parser_info.add_argument('topic',help='topic name', type=str)
     
+    parser_mkindex = subparser.add_parser('mkindex', help='see `meta -h`')
+    parser_mkindex.set_defaults(cmd_path='/subcmd_mkindex.py', preproc=PreprocCmdMkindex)
+
+    parser_index = subparser.add_parser('index', help='see `data -h`')
+    parser_index.set_defaults(cmd_path='/subcmd_index.py', preproc=PreprocCmdIndex)
+    parser_index.add_argument('-f', help='python boolean expression to filter messages in each bagfile, default: True', type=str, default="True")
 
     # top level arguments
     parser.add_argument('-d', help='target directory, default: current directory', type=str, default="./")

@@ -10,11 +10,11 @@ class AstArgs:
         self.args = args
         
         if 'BAGSLIMITED' in os.environ:
-            bagslimited = os.environ['BAGSLIMITED']
+            bagslimited = ( os.environ['BAGSLIMITED'] == 'True' )
         else:
             bagslimited = True
 
-        if bool(bagslimited) and hasattr(args, 'f'):
+        if bagslimited and hasattr(args, 'f'):
             filtercheck.check(args.f)
 
     @property

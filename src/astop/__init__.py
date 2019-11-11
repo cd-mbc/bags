@@ -4,3 +4,5 @@ from astargs import AstArgs
 from preproc_cmd_meta import PreprocCmdMeta
 from preproc_cmd_data import PreprocCmdData
 from preproc_cmd_info import PreprocCmdInfo
+from preproc_cmd_mkindex import PreprocCmdMkindex
+from preproc_cmd_index import PreprocCmdIndex
