@@ -9,12 +9,13 @@
 - rosbag API for python: http://wiki.ros.org/rosbag/Code%20API
 
 
-BAGSPATH, BAGSLIMITEDの設定と, aliasの設定.
+ソースのダウンロード, 環境変数の設定, aliasの設定.
 
 ```
-export BAGSPATH=<bags ダウンロード先>
-export BAGSLIMITED=True
-alias bags='python $BAGSPATH/bags.py'
+git clone https://github.com/cd-mbc/bags
+cd ./bags
+export BAGSPATH=$PWD
+alias bags='python $BAGSPATH/src/bags.py'
 ```
 
 ## Usage
@@ -75,6 +76,13 @@ filterには, bagファイルの検索条件として, python の真偽式を指
             - frequency: データのレート (float)
     - ファイルに含まれるメッセージのトピック情報
 
+#### 実行例
+
+記録期間が10秒以上のファイルを検索.
+```
+bags meta -d . -f 'end - start >= 10'
+```
+
 ### data
 
 ```
@@ -96,26 +104,38 @@ bags info --topic <topic>
 
 指定されたトピックを含むファイルに含まれる最初のメッセージをサンプルとして出力する. これを使ってmsgの構造について確認することができる. また, 特定のトピックについて定義されている拡張メソッドの情報についても表示する. 
 
-## BAGSLIMITED
+## 各環境変数について
 
-環境変数BAGSLIMITEDをFalseにした場合, 検索条件として指定するフィルターには任意のpythonコードを指定することができる.
-Trueの場合, フィルターに指定したコードから生成されるAST aには以下の制限が与えられる.
+- BAGSNUMPROC
+    - 利用可能な最大プロセス数を指定
+    - 検索対象となるファイルを指定された数のプロセスに割り当てることで処理を高速化する
 
-1文で表現される式に限る.
-```
-len(a.body) == 1
-```
+- BAGSFILEASSIGN
+    - 複数プロセスに対して処理するファイルを割り当てる方法を指定
+    - 0を指定するとファイルを見つけた順で割り当て
+    - 1を指定するとファイルサイズでソートしたのち順に割り当てる
 
-文はast.Exprに限る.
-```
-a.body[0].__class__ == ast.Expr
-```
+- BAGSDEBUG
+    - Trueを指定すると, 各デバッグメッセージを出力する
 
-使用可能なidentifierは以下に含まれるものに限る.
-```
-selfdef_ids = ['start','end','comp','count','count','size','ver','path','types','topics','msg']
-predef_ids = ['True','False','type','int','str','float','double']
-```
+- BAGSLIMITED
+    - Falseにした場合, 検索条件として指定するフィルターには任意のpythonコードを指定することができる.
+    - Trueの場合, フィルターに指定したコードから生成されるAST aには以下の制限が与えられる.
+        - 1文で表現される式に限る.
+        ```
+        len(a.body) == 1
+        ```
+
+        - 文はast.Exprに限る.
+        ```
+        a.body[0].__class__ == ast.Expr
+        ```
+
+        - 使用可能なidentifierは以下に含まれるものに限る.
+        ```
+        selfdef_ids = ['start','end','comp','count','count','size','ver','path','types','topics','msg']
+        predef_ids = ['True','False','type','int','str','float','double']
+        ```
 
 
 

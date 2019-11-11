@@ -9,7 +9,11 @@ class AstArgs:
     def __init__(self,args):
         self.args = args
         
-        bagslimited = os.environ['BAGSLIMITED']
+        if 'BAGSLIMITED' in os.environ:
+            bagslimited = os.environ['BAGSLIMITED']
+        else:
+            bagslimited = True
+
         if bool(bagslimited) and hasattr(args, 'f'):
             filtercheck.check(args.f)
 
