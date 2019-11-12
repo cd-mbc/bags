@@ -32,8 +32,8 @@ class AstArgs:
         return ast_filter.body[0].value    
 
     @property
-    def d(self):
-        str_td = "'%s'"  %(self.args.d)
+    def p(self):
+        str_td = "'%s'"  %(self.args.p)
         ast_td = parse(str_td)
         return ast_td.body[0].value    
 

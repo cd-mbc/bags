@@ -40,9 +40,6 @@ def check_files(files, worker_num, conn):
 
     num_found = 0
     for fname in files:
-        
-        if not utils.is_bagfile(fname):
-            continue
 
         if check(fname):
             if utils.is_debag():

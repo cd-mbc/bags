@@ -7,6 +7,7 @@
 
 - python2
 - rosbag API for python: http://wiki.ros.org/rosbag/Code%20API
+- SQLAlchemy
 
 
 ソースのダウンロード, 環境変数の設定, aliasの設定.

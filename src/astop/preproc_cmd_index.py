@@ -9,7 +9,6 @@ class PreprocCmdIndex(NodeTransformer):
     def __init__(self, aa):
         super(PreprocCmdIndex, self).__init__()
         self.f = aa.f
-        self.d = aa.d
 
     def visit_Name(self, node):
         if node.id == 'FILTER':
