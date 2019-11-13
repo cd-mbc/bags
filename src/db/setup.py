@@ -3,17 +3,23 @@
 import os
 from collections import namedtuple
 
-from sqlalchemy import Column, ForeignKey, Integer, String, Float
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship
 from sqlalchemy import create_engine
-
+from sqlalchemy.event import listen
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import Column, Integer, String, ForeignKey, Float
+from geoalchemy2 import Geometry
+from sqlalchemy.sql import select, func
 from sqlalchemy.orm import sessionmaker
+
 
 import ops
 
 Base = declarative_base()
 
+
+def load_spatialite(dbapi_conn, connection_record):
+    dbapi_conn.enable_load_extension(True)
+    dbapi_conn.load_extension('/usr/lib/x86_64-linux-gnu/mod_spatialite.so')
 
 class Files(Base):
     __tablename__ = 'files'
@@ -32,27 +38,30 @@ class NdtPose(Base):
 
     id = Column(Integer, primary_key=True)
     file_id = Column(Integer, ForeignKey('files.id'))
-    position_max_x = Column(Float)
-    position_max_y = Column(Float)
-    position_min_x = Column(Float)
-    position_min_y = Column(Float)
+    geom = Column(Geometry(geometry_type='POLYGON', management=True))
 
     @property
     def serialize(self):
-        nt_NdtPose = namedtuple('nt_NdtPose',['file_name','position_max_x', 'position_max_y', 'position_min_x', 'position_min_y'])       
+        nt_NdtPose = namedtuple('nt_NdtPose',['file_name'])       
+        print ops.Ops().st_contains(0,1)
         return nt_NdtPose(
             file_name=ops.Ops().get_filename_by_id(self.file_id),
-            position_max_x=self.position_max_x,
-            position_max_y=self.position_max_y,
-            position_min_x=self.position_min_x,
-            position_min_y=self.position_min_y,
         )
 
 
+def initizlize():
+    conn = engine.connect()
+    conn.execute(select([func.InitSpatialMetaData()]))
+    conn.close()
+
+    Files.__table__.create(engine)
+    NdtPose.__table__.create(engine)    
 
 
 bagspath = os.environ['BAGSPATH']
 dbname = 'sqlite:///' + bagspath + '/index.db'
 engine = create_engine(dbname)
-Base.metadata.create_all(engine)
+listen(engine, 'connect', load_spatialite)
 
+if not os.path.exists(bagspath + '/index.db'):
+    initizlize()

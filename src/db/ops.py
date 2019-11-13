@@ -3,6 +3,10 @@ import os
 
 from sqlalchemy import create_engine
 from setup import Base, Files, NdtPose
+from setup import load_spatialite
+from sqlalchemy.event import listen
+from geoalchemy2 import WKTElement
+from sqlalchemy.sql import select, func
 from sqlalchemy.orm import sessionmaker
 
 
@@ -12,6 +16,7 @@ class Ops:
         bagspath = os.environ['BAGSPATH']
         dbname = 'sqlite:///' + bagspath + '/index.db'        
         engine = create_engine(dbname)
+        listen(engine, 'connect', load_spatialite)
         Base.metadata.bind=engine
         Session = sessionmaker(bind=engine)
         self.session = Session()    
@@ -39,15 +44,18 @@ class Ops:
 
     def add_ndt_pose(self,fname,max_x,max_y,min_x,min_y): 
 
+        # if None (i.e the file does not have /ndt_pose), ignore it
+        if not (max_x and max_y and min_x and min_y):
+            return
+
+        print max_x, max_y, min_x, min_y
+
         if not self.exists_file(fname):
             self.add_file(fname)
 
         new_ndt_pose = NdtPose(
             file_id=self.get_file(fname).id,
-            position_max_x=max_x,
-            position_max_y=max_y,
-            position_min_x=min_x,
-            position_min_y=min_y,
+            geom='POLYGON((%f %f,%f %f,%f %f,%f %f,%f %f))' %(min_x,min_y,max_x,min_y,max_x,max_y,min_x,max_y,min_x,min_y)
         )
         self.session.add(new_ndt_pose)
         self.session.commit()
