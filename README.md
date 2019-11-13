@@ -7,8 +7,13 @@
 
 - python2
 - rosbag API for python: http://wiki.ros.org/rosbag/Code%20API
-- SQLAlchemy
+- SQLAlchemy, GeoAlchemy2, Spatialite
 
+```
+apt install sqlite3 libsqlite3-mod-spatialite build-essential python-dev
+pip install SQLAlchemy
+pip install GeoAlchemy2
+```
 
 ソースのダウンロード, 環境変数の設定, aliasの設定.
 
@@ -22,17 +27,17 @@ alias bags='python $BAGSPATH/src/bags.py'
 ## Usage
 
 ```
-bags -d <directory> {meta, data, info}
+bags {meta, data, info, mkindex, index}
 ```
 
-directoryには, bagファイルを探索する際のルートディレクトリを指定することができる. ここで指定したディレクトリから再帰的にそのサブディレクトリを全て探索する. デフォルトはカレントディレクトリ.
 
 ### meta
 
 ```
-bags -d <directory> meta -f <filter>
+bags meta -p <path> -f <filter>
 ```
 
+pathには, 検索対象のファイルもしくはディレクトリを指定する. ディレクトリの場合, 再帰的にサブディレクトリも検索する.
 filterには, bagファイルの検索条件として, python の真偽式を指定することができる.  
 また, 以下の追加の変数が利用可能. 基本的に rosbag python API で取得できるメタ情報をそのまま利用, もしくは一部修正したもの.
 
@@ -81,13 +86,13 @@ filterには, bagファイルの検索条件として, python の真偽式を指
 
 記録期間が10秒以上のファイルを検索.
 ```
-bags meta -d . -f 'end - start >= 10'
+bags meta -p . -f 'end - start >= 10'
 ```
 
 ### data
 
 ```
-bags data <topic> -f <filter>
+bags data <topic> -p <path> -f <filter>
 ```
 
 指定されたトピックについて, 条件を満たすメッセージを含むファイルを出力する. フィルターにはpythonの真偽式を指定し, 以下の変数が利用可能. 
@@ -100,10 +105,39 @@ bags data <topic> -f <filter>
 ### info
 
 ```
-bags info --topic <topic> 
+bags info <topic> -p <path>
 ```
 
 指定されたトピックを含むファイルに含まれる最初のメッセージをサンプルとして出力する. これを使ってmsgの構造について確認することができる. また, 特定のトピックについて定義されている拡張メソッドの情報についても表示する. 
+
+### mkindex
+
+```
+bags mkindex -p <path>
+```
+
+検索を効率化するためのindexとして, 各ファイルについて, 各トピックごとに統計情報を取得し, BAGSPATH/index.db に保管する. 現在は/ndt_pose トピックについて position.x, position.y のそれぞれの最大,最小($X_{max},Y_{max},X_{min},Y_{min}$)によって形成されるpolygon ($X_{min} Y_{min},X_{max} Y_{min},X_{max} Y_{max},X_{min} Y_{max},X_{min} Y_{min}$) を保管する.
+
+### index
+
+```
+bags index -p <path> -f <filter>
+```
+
+dataコマンドなどで検索に時間がかかる場合に, 効率化するため事前にindexを利用して絞り込みをすることが可能.  
+filterには, トピックごとに検索する専用のメソッドと, python集合演算(e.g. &,|)を記述可能. 現在は以下のメソッドが利用可能.
+
+- ndt_pose
+    - st_contains(x,y)
+        - x: float, y: float
+        - (x,y)がpolygonに入っているファイルを返す
+
+#### 実行例
+polygonが(100,200)と(200,300)を含んでいるファイルを検索.
+
+```
+bags index -f 'ndt_pose.st_contains(100, 200) & ndt_pose.st_contains(200, 300)'
+```
 
 ## 各環境変数について
 
@@ -135,6 +169,7 @@ bags info --topic <topic>
         - 使用可能なidentifierは以下に含まれるものに限る.
         ```
         selfdef_ids = ['start','end','comp','count','count','size','ver','path','types','topics','msg']
+        selfdef_for_index = ['ndt_pose']
         predef_ids = ['True','False','type','int','str','float','double']
         ```
 

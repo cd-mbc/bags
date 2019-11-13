@@ -18,10 +18,10 @@ def check_ndt_pose(bag,fname):
     if ops.exists_file(fname):
         return
 
-    position_max_x = 0
-    position_min_x = 0
-    position_max_y = 0
-    position_min_y = 0
+    position_max_x = None
+    position_min_x = None
+    position_max_y = None
+    position_min_y = None 
     initilized = False   
 
 
