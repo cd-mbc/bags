@@ -19,9 +19,9 @@ pip install GeoAlchemy2
 
 ```
 git clone https://github.com/cd-mbc/bags
-cd ./bags
+cd ./bags/src
 export BAGSPATH=$PWD
-alias bags='python $BAGSPATH/src/bags.py'
+alias bags='python $BAGSPATH/bags.py'
 ```
 
 ## Usage
